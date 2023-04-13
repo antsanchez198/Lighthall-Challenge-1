@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react'
 function App() {
 
   var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
+  
   const [locations, setLocations] = useState([])
+  const [county, setCounty] = useState([])
+  const [state, setState] = useState([])
 
   const increment = () => {
     setData(data + 1);
@@ -18,9 +21,16 @@ function App() {
 
       const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
       const jsonData = await response.json();
-      if (!locations.includes(jsonData.principalSubdivision) || !locations.includes(jsonData.locality)) {
-        let str = jsonData.locality + ', ' + jsonData.principalSubdivision;
-        locations.push(str)
+
+      let currentState = jsonData.principalSubdivision;
+      let currentCounty = jsonData.locality;
+
+      if (!state.includes(currentState) || !county.includes(currentCounty)) {
+        let str = currentCounty + ', ' + currentState;
+        
+        locations.push(str);
+        state.push(currentState);
+        county.push(currentCounty);
       }
     }
 
@@ -42,10 +52,13 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Hi baby :* The number below is how much you love me</h1>
+      <h1>Press below to increment</h1>
       <h3>Count: {data}</h3>
-      <button onClick={() => { increment(); fetchLocation(); }}>Increment</button>
-      
+      <button 
+        onClick={() => { increment(); fetchLocation();}}
+        style={{width: "10rem", height: "2rem", backgroundColor: "#025669", color: "white"}}
+      >Increment</button>
+
       <table>
         <tr>
           <th>Locations clicked</th>
