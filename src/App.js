@@ -1,8 +1,62 @@
 import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react'
+import { db } from './firebase';
+import { getDocs, collection, addDoc, updateDoc, doc, setDoc} from "firebase/firestore";
 
 function App() {
+
+  const [clickAmount, setClickAmount] = useState([]);
+  const [allClicks, setAllClicks] = useState([])
+
+  const clicksCollection = collection(db, "click-amount");
+  let amount = 0;
+
+  useEffect(() => {
+    const getClickAmount = async () => {
+    
+      try {
+        const data = await getDocs(clicksCollection);
+        const filteredData = data.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }))
+        setAllClicks(filteredData)
+        console.log(allClicks)
+      } catch (error) {
+        console.log(error)
+      }
+
+    }
+
+    const setLocationClick = async () => {
+      try {
+        await setDoc(doc(db, "click-amount", "jersey"), {
+          name: "Los Angeles",
+          state: "CA",
+          country: "USA"
+        });
+
+        // await addDoc(clicksCollection, {
+        //   Country: "Mexico",
+        //   Clicks: 6,
+        //   id: "Testing"
+        // });
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    const updateClickCount = async (id) => {
+      const locationClicked = doc(db, "click-amount", id);
+      await updateDoc( locationClicked, {Clicks: 7})
+    }
+
+    setLocationClick();
+    getClickAmount();
+    updateClickCount();
+  }, [])
+
 
   var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
   
@@ -56,7 +110,7 @@ function App() {
       <h3>Count: {data}</h3>
       <button 
         onClick={() => { increment(); fetchLocation();}}
-        style={{width: "10rem", height: "2rem", backgroundColor: "#025669", color: "white"}}
+        // style={{width: "10rem", height: "2rem", backgroundColor: "#025669", color: "white"}}
       >Increment</button>
 
       <table>
@@ -66,6 +120,16 @@ function App() {
         <tr>
           {locations && locations.map((index) => (<div>{index}</div>))}
         </tr>
+      </table>
+
+      <table>
+        <thead>
+          <tr>
+            <th>City</th>
+            <th>Country</th>
+            <th>Clicks</th>
+          </tr>
+        </thead>
       </table>
     </div>
   );

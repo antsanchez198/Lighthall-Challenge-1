@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+
+button {
+  width: 10rem; 
+  height: 2rem; 
+  background-color: #025669;
+  color: white;
+}
