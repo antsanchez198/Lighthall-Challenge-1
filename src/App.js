@@ -7,11 +7,11 @@ function App() {
 
   const [clickAmount, setClickAmount] = useState(0);
   const [dbData, setdbData] = useState([])
+  const [currentUserLocation, setCurrentUserLocation] = useState("")
 
   let sum = 0;
 
   const clicksCollection = collection(db, "click-amount");
-
 
   const getClickAmount = async () => {
     try {
@@ -22,7 +22,6 @@ function App() {
       }))
       setdbData(filteredData);
       setClickAmount(sum);
-      console.log(clickAmount, "sum")
     } catch (error) {
       console.log(error)
     }
@@ -49,7 +48,7 @@ function App() {
   }
 
   useEffect(() => {
-  }, [dbData, clickAmount])
+  }, [dbData, clickAmount, currentUserLocation])
 
 
   var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
@@ -62,15 +61,16 @@ function App() {
       const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
       const jsonData = await response.json();
 
-      let userCountry = jsonData.countryName
+      let currentUserCountry = jsonData.countryName
+      setCurrentUserLocation(jsonData.locality + ", " + jsonData.principalSubdivision)
 
-      if (dbData.filter(e => e.Country === userCountry).length == 0) {
-        newLocationClick(userCountry)
+      if (dbData.filter(e => e.Country === currentUserCountry).length == 0) {
+        newLocationClick(currentUserCountry)
       }
       else {
-        let countryFound = dbData.filter(e => e.Country === userCountry)
+        let countryFound = dbData.filter(e => e.Country === currentUserCountry)
         let countryClicks = countryFound.at(0).Clicks + 1 //increment country
-        updateClickCount(userCountry, countryClicks)
+        updateClickCount(currentUserCountry, countryClicks)
       }
     }
 
@@ -97,11 +97,16 @@ function App() {
         <rect x="6" y="3" width="12" height="18" rx="4" />
         <line x1="12" y1="7" x2="12" y2="11" />
       </svg></h1>
-      <button onClick={() => { incrementClicks(); getClickAmount(); }}>Click Me!
+      <button onClick={() => { incrementClicks(); getClickAmount(); }}>Click Me
       </button>
 
-      <div className='bottom-container'>
-        <h1>Clicks Around the Globe
+      <div className='spacing flex'>
+        <h1>Current Location:</h1>
+        <h2>{currentUserLocation}</h2>
+      </div>
+
+      <div className='spacing'>
+        <h1>Clicks Around the World
           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin" style={{ marginLeft: "5px" }} width="24" height="24" viewBox="0 0 24 24" stroke-width="3" stroke="#75E6DA" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <circle cx="12" cy="11" r="3" />

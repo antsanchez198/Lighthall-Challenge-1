@@ -1,6 +1,18 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,300,700);
 @import url(https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap&family=Poppins&display=swap);
 
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root  {
+  --tealColor: #75E6DA;
+  --buttonBackground: #05445E;
+  --buttonSecondaryColor: #D4F1F4;
+}
+
 body {
   /* background: -webkit-linear-gradient(left, #25c481, #25b7c4);
   background: linear-gradient(to right, #25c481, #25b7c4); */
@@ -8,7 +20,7 @@ body {
   background: #2980b9;  /* fallback for old browsers */
 background: -webkit-linear-gradient(to right, #2c3e50, #2980b9);  /* Chrome 10-25, Safari 5.1-6 */
 background: linear-gradient(to right, #2c3e50, #2980b9); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-padding: 1rem 0;
+margin: 2rem 0;
 
 }
 
@@ -16,34 +28,25 @@ padding: 1rem 0;
   text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
 button {
   width: auto;
   height: auto;
   padding: .5rem 2rem;
-  color: #D4F1F4;
-  background-color: #05445E;
-  margin: 0 auto;
-  border: 2px solid #D4F1F4;
+  color: var(--buttonSecondaryColor);
+  background-color: var(--buttonBackground);
+  margin: 5px auto;
+  border: 2px solid var(--buttonSecondaryColor);
   border-radius: 50px;
-  font-family: 'Poppins';
   font-size: 1.5rem;
 }
 
 button:hover{
+  border: 2px solid var(--tealColor);
   cursor: pointer;
-  color: #75E6DA;
-  border: 2px solid #75E6DA;
+}
+
+button, h2 {
+  font-family: 'Poppins';
 }
 
 h1 {
@@ -51,8 +54,18 @@ h1 {
   color: #fff;
   font-weight: 300;
   text-align: center;
-  margin-bottom: 15px;
   font-family: 'Alfa Slab One', cursive;
+}
+
+h2, button:hover {
+  color: var(--tealColor);
+}
+
+.flex {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
 }
 
 table {
@@ -68,9 +81,8 @@ thead {
 .tbl-content {
   height: auto;
   overflow-x: auto;
-  margin-top: 0px;
   width: 80%;
-  margin: 0 auto;
+  margin: 5px auto;
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -93,11 +105,6 @@ td {
   border-bottom: solid 2px rgba(255, 255, 255, 0.1);
 }
 
-
-section {
-  margin: 50px;
-}
-
-.bottom-container {
-  margin-top: 5rem;
+.spacing {
+  margin-top: 3rem;
 }
