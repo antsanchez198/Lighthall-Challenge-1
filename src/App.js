@@ -1,74 +1,60 @@
-import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react'
 import { db } from './firebase';
-import { getDocs, collection, addDoc, updateDoc, doc, setDoc} from "firebase/firestore";
+import { getDocs, collection, addDoc, updateDoc, doc, setDoc } from "firebase/firestore";
 
 function App() {
 
-  const [clickAmount, setClickAmount] = useState([]);
-  const [allClicks, setAllClicks] = useState([])
+  const [clickAmount, setClickAmount] = useState(0);
+  const [dbData, setdbData] = useState([])
+
+  let sum = 0;
 
   const clicksCollection = collection(db, "click-amount");
-  let amount = 0;
+
+  const getClickAmount = async () => {
+    try {
+      const data = await getDocs(clicksCollection);
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        ...sum += doc.data().Clicks,
+      }))
+      setdbData(filteredData);
+      setClickAmount(sum);
+      console.log(clickAmount, "sum")
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+
+  const newLocationClick = async (userCountry) => {
+    try {
+      await setDoc(doc(db, "click-amount", userCountry), {
+        Clicks: 1,
+        Country: userCountry
+      });
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateClickCount = async (id, updateCount) => {
+    const locationClicked = doc(db, "click-amount", id);
+    await updateDoc(locationClicked, { Clicks: updateCount })
+  }
 
   useEffect(() => {
-    const getClickAmount = async () => {
-    
-      try {
-        const data = await getDocs(clicksCollection);
-        const filteredData = data.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }))
-        setAllClicks(filteredData)
-        console.log(allClicks)
-      } catch (error) {
-        console.log(error)
-      }
-
-    }
-
-    const setLocationClick = async () => {
-      try {
-        await setDoc(doc(db, "click-amount", "jersey"), {
-          name: "Los Angeles",
-          state: "CA",
-          country: "USA"
-        });
-
-        // await addDoc(clicksCollection, {
-        //   Country: "Mexico",
-        //   Clicks: 6,
-        //   id: "Testing"
-        // });
-      } catch (error) {
-        console.log(error)
-      }
-    }
-
-    const updateClickCount = async (id) => {
-      const locationClicked = doc(db, "click-amount", id);
-      await updateDoc( locationClicked, {Clicks: 7})
-    }
-
-    setLocationClick();
-    getClickAmount();
-    updateClickCount();
-  }, [])
+  }, [dbData, clickAmount])
 
 
   var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
-  
+
   const [locations, setLocations] = useState([])
   const [county, setCounty] = useState([])
   const [state, setState] = useState([])
 
-  const increment = () => {
-    setData(data + 1);
-  }
-
-  const fetchLocation = async () => {
+  const incrementClicks = async () => {
     const success = async (position) => {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
@@ -76,15 +62,15 @@ function App() {
       const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
       const jsonData = await response.json();
 
-      let currentState = jsonData.principalSubdivision;
-      let currentCounty = jsonData.locality;
+      let userCountry = jsonData.countryName
 
-      if (!state.includes(currentState) || !county.includes(currentCounty)) {
-        let str = currentCounty + ', ' + currentState;
-        
-        locations.push(str);
-        state.push(currentState);
-        county.push(currentCounty);
+      if (dbData.filter(e => e.Country === userCountry).length == 0) {
+        newLocationClick(userCountry)
+      }
+      else {
+        let countryFound = dbData.filter(e => e.Country === userCountry)
+        let countryClicks = countryFound.at(0).Clicks + 1 //increment country
+        updateClickCount(userCountry, countryClicks)
       }
     }
 
@@ -106,31 +92,43 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Press below to increment</h1>
-      <h3>Count: {data}</h3>
-      <button 
-        onClick={() => { increment(); fetchLocation();}}
-        // style={{width: "10rem", height: "2rem", backgroundColor: "#025669", color: "white"}}
-      >Increment</button>
+      <h1>Total Clicks <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mouse" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <rect x="6" y="3" width="12" height="18" rx="4" />
+          <line x1="12" y1="7" x2="12" y2="11" />
+        </svg> : {clickAmount}</h1>
+      <button onClick={() => { incrementClicks(); getClickAmount(); }}>Click Me!
+      </button>
 
-      <table>
-        <tr>
-          <th>Locations clicked</th>
-        </tr>
-        <tr>
-          {locations && locations.map((index) => (<div>{index}</div>))}
-        </tr>
-      </table>
+      <h1>Clicks Around the Globe
 
-      <table>
-        <thead>
-          <tr>
-            <th>City</th>
-            <th>Country</th>
-            <th>Clicks</th>
-          </tr>
-        </thead>
-      </table>
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <circle cx="12" cy="11" r="3" />
+          <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
+        </svg>
+      </h1>
+      <div class="tbl-content">
+        <table cellpadding="0" cellspacing="0" border="0">
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>Clicks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dbData && dbData.map((item) => {
+              return (
+                <tr>
+                  <td>{item.Country}</td>
+                  <td>{item.Clicks}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   );
 }
