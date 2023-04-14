@@ -12,6 +12,7 @@ function App() {
 
   const clicksCollection = collection(db, "click-amount");
 
+
   const getClickAmount = async () => {
     try {
       const data = await getDocs(clicksCollection);
@@ -27,6 +28,9 @@ function App() {
     }
 
   }
+
+  getClickAmount();
+
 
   const newLocationClick = async (userCountry) => {
     try {
@@ -49,10 +53,6 @@ function App() {
 
 
   var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
-
-  const [locations, setLocations] = useState([])
-  const [county, setCounty] = useState([])
-  const [state, setState] = useState([])
 
   const incrementClicks = async () => {
     const success = async (position) => {
