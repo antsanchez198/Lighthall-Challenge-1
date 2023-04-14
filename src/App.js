@@ -28,9 +28,6 @@ function App() {
 
   }
 
-  getClickAmount();
-
-
   const newLocationClick = async (userCountry) => {
     try {
       await setDoc(doc(db, "click-amount", userCountry), {
@@ -48,6 +45,7 @@ function App() {
   }
 
   useEffect(() => {
+    getClickAmount();
   }, [dbData, clickAmount, currentUserLocation])
 
 
