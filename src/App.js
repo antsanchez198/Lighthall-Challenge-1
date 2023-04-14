@@ -9,11 +9,10 @@ function App() {
   const [dbData, setdbData] = useState([])
   const [currentUserLocation, setCurrentUserLocation] = useState("")
 
-  let sum = 0;
-
   const clicksCollection = collection(db, "click-amount");
 
   const getClickAmount = async () => {
+    let sum = 0;
     try {
       const data = await getDocs(clicksCollection);
       const filteredData = data.docs.map((doc) => ({
@@ -28,11 +27,11 @@ function App() {
 
   }
 
-  const newLocationClick = async (userCountry) => {
+  const newLocationClick = async (userCity) => {
     try {
-      await setDoc(doc(db, "click-amount", userCountry), {
+      await setDoc(doc(db, "click-amount", userCity), {
         Clicks: 1,
-        Country: userCountry
+        City: userCity
       });
     } catch (error) {
       console.log(error)
@@ -44,13 +43,6 @@ function App() {
     await updateDoc(locationClicked, { Clicks: updateCount })
   }
 
-  useEffect(() => {
-    getClickAmount();
-  }, [dbData, clickAmount, currentUserLocation])
-
-
-  var [data, setData] = useState(JSON.parse(window.localStorage.getItem('dataKey')));
-
   const incrementClicks = async () => {
     const success = async (position) => {
       const latitude = position.coords.latitude;
@@ -59,16 +51,16 @@ function App() {
       const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
       const jsonData = await response.json();
 
-      let currentUserCountry = jsonData.countryName
+      let currentUserCity = jsonData.principalSubdivision
       setCurrentUserLocation(jsonData.locality + ", " + jsonData.principalSubdivision)
 
-      if (dbData.filter(e => e.Country === currentUserCountry).length == 0) {
-        newLocationClick(currentUserCountry)
+      if (dbData.filter(e => e.City === currentUserCity).length == 0) {
+        newLocationClick(currentUserCity)
       }
       else {
-        let countryFound = dbData.filter(e => e.Country === currentUserCountry)
-        let countryClicks = countryFound.at(0).Clicks + 1 //increment country
-        updateClickCount(currentUserCountry, countryClicks)
+        let cityFound = dbData.filter(e => e.City === currentUserCity)
+        let cityClicks = cityFound.at(0).Clicks + 1 //increment country
+        updateClickCount(currentUserCity, cityClicks)
       }
     }
 
@@ -79,14 +71,12 @@ function App() {
     navigator.geolocation.getCurrentPosition(success, error);
   }
 
+  useEffect(() => {
+    getClickAmount();
+  }, [])
 
   useEffect(() => {
-    localStorage.setItem('dataKey', JSON.stringify(data));
-  }, [data]);
-
-  useEffect(() => {
-    setData(JSON.parse(window.localStorage.getItem('dataKey')))
-  })
+  }, [dbData, clickAmount, currentUserLocation]);
 
   return (
     <div className="App">
@@ -115,7 +105,7 @@ function App() {
           <table cellpadding="0" cellspacing="0" border="0">
             <thead>
               <tr>
-                <th>Country</th>
+                <th>City</th>
                 <th>Clicks</th>
               </tr>
             </thead>
@@ -123,7 +113,7 @@ function App() {
               {dbData && dbData.map((item) => {
                 return (
                   <tr>
-                    <td>{item.Country}</td>
+                    <td>{item.City}</td>
                     <td>{item.Clicks}</td>
                   </tr>
                 );
